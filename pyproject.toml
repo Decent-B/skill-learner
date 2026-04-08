@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "skill-learner"
 version = "0.1.0"
@@ -22,6 +26,9 @@ dependencies = [
     "typer>=0.24.1",
 ]
 
+[project.scripts]
+skill-learner = "skill_learner.cli:main"
+
 [dependency-groups]
 dev = [
     "hypothesis>=6.151.11",
@@ -32,3 +39,25 @@ dev = [
     "ruff>=0.15.9",
     "skills-ref>=0.1.1",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+mypy_path = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
