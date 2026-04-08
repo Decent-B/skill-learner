@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Build Fix Notes</title>
+  </head>
+  <body>
+    <h1>Fix failing Maven workflow</h1>
+    <p>Use batch mode in CI and print full stack traces for failures.</p>
+    <ol>
+      <li>Run <code>mvn -B -e verify</code>.</li>
+      <li>If module-specific failure appears, retry with <code>-pl</code>.</li>
+    </ol>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+Fix build workflow for Java project.
+
+1. Run `mvn -B -e verify` locally.
+2. Check dependency mirror and repository settings.
+3. Re-run CI and inspect failing module.
