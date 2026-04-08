@@ -1,0 +1,5 @@
+ingestion:
+  default_timeout_seconds: 15.0
+  raw_dir: datasets/raw
+  manifest_dir: datasets/manifests
+  allow_live_network: true
