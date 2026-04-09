@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from skill_learner.cli import app
@@ -117,3 +118,73 @@ def test_cli_extract_preview_writes_artifacts(tmp_path: Path) -> None:
     )
     assert result.exit_code == 0
     assert "Extraction preview artifacts" in result.stdout
+
+
+def test_cli_synthesize_writes_skill_artifacts(tmp_path: Path) -> None:
+    preview_path = tmp_path / "preview.json"
+    preview_path.write_text(
+        "\n".join(
+            [
+                "{",
+                '  "benchmark_id": "fix-build-google-auto",',
+                '  "items": [',
+                "    {",
+                '      "id": "G1",',
+                '      "status": "success",',
+                '      "steps": [',
+                "        {",
+                '          "source_id": "web_aaaaaaaaaaaaaaaa",',
+                '          "text": "mvn -X -B verify",',
+                '          "tags": ["build_cmd", "diagnostic_flag"],',
+                '          "confidence": "high",',
+                '          "span": null,',
+                '          "preconditions": ["Maven is available."],',
+                '          "postconditions": ["The command completes with exit code 0."]',
+                "        }",
+                "      ]",
+                "    }",
+                "  ]",
+                "}",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app,
+        [
+            "synthesize",
+            "--preview-json",
+            str(preview_path),
+            "--output-root",
+            str(tmp_path / "skills"),
+            "--skill-name",
+            "fix-build-google-auto-repair",
+            "--no-validate",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Synthesis artifacts" in result.stdout
+
+
+def test_cli_validate_skill_reports_invalid(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    skill_dir = tmp_path / "skill"
+    skill_dir.mkdir(parents=True, exist_ok=True)
+
+    def fake_validate(_: Path) -> tuple[bool, str]:
+        return False, "invalid frontmatter"
+
+    monkeypatch.setattr("skill_learner.cli.validate_skill_directory", fake_validate)
+    result = runner.invoke(
+        app,
+        [
+            "validate-skill",
+            "--skill-dir",
+            str(skill_dir),
+        ],
+    )
+    assert result.exit_code == 1
+    assert "skill is invalid" in result.stdout
