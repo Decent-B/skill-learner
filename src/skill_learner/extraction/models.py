@@ -15,6 +15,16 @@ class StepConfidence(StrEnum):
     LOW = "low"
 
 
+class SourceSpan(BaseModel):
+    """Reference to where the step was found in normalized source text."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    section_title: str = Field(min_length=1)
+    section_line_start: int = Field(ge=1)
+    section_line_end: int = Field(ge=1)
+
+
 class ExtractedStep(BaseModel):
     """One extracted procedural step."""
 
@@ -23,6 +33,9 @@ class ExtractedStep(BaseModel):
     source_id: str = Field(min_length=3, max_length=128, pattern=r"^[a-z0-9_]+$")
     text: str = Field(min_length=1)
     tags: list[str] = Field(default_factory=list)
+    span: SourceSpan | None = None
+    preconditions: list[str] = Field(default_factory=list)
+    postconditions: list[str] = Field(default_factory=list)
     confidence: StepConfidence
 
 

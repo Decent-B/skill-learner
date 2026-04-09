@@ -66,6 +66,12 @@ def test_fix_build_pack_to_preview_outputs_expected_artifacts(tmp_path: Path) ->
     assert success_item["status"] == "success"
     assert "mvn -rf :module-a --also-make" in success_item["command_candidates"]
     assert len(success_item["steps"]) > 0
+    first_step = success_item["steps"][0]
+    assert "span" in first_step
+    assert "preconditions" in first_step
+    assert "postconditions" in first_step
+    assert isinstance(first_step["preconditions"], list)
+    assert isinstance(first_step["postconditions"], list)
 
     assert failed_item["status"] == "failed"
     assert failed_item["error"] is not None

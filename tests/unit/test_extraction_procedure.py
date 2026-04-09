@@ -17,6 +17,7 @@ def test_extract_procedure_adds_tags_and_confidence() -> None:
                     [
                         "1. Configure settings.xml mirror for dependencies",
                         "rerun mvn -rf :module-a --also-make",
+                        "mvn -X -B verify",
                     ]
                 ),
             )
@@ -33,14 +34,25 @@ def test_extract_procedure_adds_tags_and_confidence() -> None:
     assert by_text["mvn -X -B verify"].confidence is StepConfidence.HIGH
     assert "build_cmd" in by_text["mvn -X -B verify"].tags
     assert "diagnostic_flag" in by_text["mvn -X -B verify"].tags
+    assert by_text["mvn -X -B verify"].span is not None
+    assert by_text["mvn -X -B verify"].span.section_title == "Repair flow"
+    assert by_text["mvn -X -B verify"].span.section_line_start == 3
+    assert by_text["mvn -X -B verify"].preconditions
+    assert by_text["mvn -X -B verify"].postconditions
 
     rerun_step = by_text["rerun mvn -rf :module-a --also-make"]
     assert rerun_step.confidence is StepConfidence.MEDIUM
     assert "rerun_strategy" in rerun_step.tags
+    assert rerun_step.span is not None
+    assert rerun_step.span.section_line_start == 2
+    assert rerun_step.postconditions
 
     dependency_step = by_text["Configure settings.xml mirror for dependencies"]
     assert dependency_step.confidence is StepConfidence.MEDIUM
     assert "dependency_fix" in dependency_step.tags
+    assert dependency_step.span is not None
+    assert dependency_step.span.section_line_start == 1
+    assert dependency_step.preconditions
 
 
 def test_extract_procedure_handles_untagged_text_as_low_confidence() -> None:
@@ -56,3 +68,27 @@ def test_extract_procedure_handles_untagged_text_as_low_confidence() -> None:
     result = extract_procedure(normalized)
 
     assert result.steps == []
+
+
+def test_extract_procedure_maps_numbered_list_item_to_source_span() -> None:
+    normalized = NormalizedDocument(
+        source_id="text_0101010101010101",
+        source_uri="https://example.com/numbered",
+        sections=[
+            NormalizedSection(
+                title="Flow",
+                body="1. Configure workflow yaml\n2. Run mvn -B verify",
+            )
+        ],
+        code_blocks=[],
+        list_items=["Configure workflow yaml"],
+        command_like_lines=[],
+    )
+
+    result = extract_procedure(normalized)
+    by_text = {step.text: step for step in result.steps}
+
+    step = by_text["Configure workflow yaml"]
+    assert step.span is not None
+    assert step.span.section_title == "Flow"
+    assert step.span.section_line_start == 1

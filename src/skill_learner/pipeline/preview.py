@@ -75,10 +75,23 @@ def _render_preview_markdown(payload: dict[str, Any]) -> str:
         else:
             for step in steps[:5]:
                 tag_text = ", ".join(step["tags"]) or "untagged"
+                span = step.get("span")
+                if isinstance(span, dict):
+                    span_text = (
+                        f"{span['section_title']}:{span['section_line_start']}"
+                        f"-{span['section_line_end']}"
+                    )
+                else:
+                    span_text = "unmapped"
+                preconditions = "; ".join(step.get("preconditions", [])) or "none"
+                postconditions = "; ".join(step.get("postconditions", [])) or "none"
                 lines.append(
                     f"  - ({step['confidence']}) [{tag_text}] "
                     f"{step['text']}"
                 )
+                lines.append(f"    span: {span_text}")
+                lines.append(f"    pre: {preconditions}")
+                lines.append(f"    post: {postconditions}")
         lines.append("")
 
     return "\n".join(lines).strip() + "\n"
