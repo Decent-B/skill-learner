@@ -65,6 +65,37 @@ def test_fetch_web_source_uses_extractors(monkeypatch: pytest.MonkeyPatch) -> No
     text, metadata = fetch_web_source("https://example.com/doc")
     assert "step 1" in text
     assert metadata["status_code"] == 200
+    assert metadata["extraction_method"] == "trafilatura"
+
+
+def test_fetch_web_source_keeps_raw_markdown_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    class FakeResponse:
+        def __init__(self) -> None:
+            self.text = "# Setup Java\n\nRun `mvn -B verify`\n"
+            self.status_code = 200
+            self.url = "https://raw.githubusercontent.com/actions/setup-java/main/README.md"
+            self.headers = {"content-type": "text/plain; charset=utf-8"}
+
+        def raise_for_status(self) -> None:
+            return None
+
+    def fake_get(url: str, follow_redirects: bool, timeout: Any) -> FakeResponse:
+        assert url.endswith("/README.md")
+        assert follow_redirects is True
+        assert timeout is not None
+        return FakeResponse()
+
+    def fake_extract(*_: Any, **__: Any) -> str:
+        raise AssertionError("trafilatura.extract should not run for markdown/plaintext responses")
+
+    monkeypatch.setattr("skill_learner.ingestion.sources.httpx.get", fake_get)
+    monkeypatch.setattr("skill_learner.ingestion.sources.trafilatura.extract", fake_extract)
+
+    text, metadata = fetch_web_source(
+        "https://raw.githubusercontent.com/actions/setup-java/main/README.md"
+    )
+    assert "Setup Java" in text
+    assert metadata["extraction_method"] == "raw_text"
 
 
 def test_read_pdf_source_with_mocked_reader(

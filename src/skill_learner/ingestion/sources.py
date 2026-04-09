@@ -22,6 +22,17 @@ class SourceExtractionError(IngestionError):
     """Raised when text extraction yields no useful text."""
 
 
+def _normalized_content_type(content_type_header: str | None) -> str | None:
+    if content_type_header is None:
+        return None
+    return content_type_header.split(";", 1)[0].strip().lower()
+
+
+def _looks_like_markdown_url(url: str) -> bool:
+    lowered = url.lower()
+    return lowered.endswith(".md") or lowered.endswith(".markdown")
+
+
 def fetch_web_source(url: str, timeout_seconds: float = 15.0) -> tuple[str, dict[str, Any]]:
     """Fetch and extract web text using HTTPX + Trafilatura."""
     timeout = httpx.Timeout(timeout_seconds, connect=timeout_seconds)
@@ -29,25 +40,44 @@ def fetch_web_source(url: str, timeout_seconds: float = 15.0) -> tuple[str, dict
         response = httpx.get(url, follow_redirects=True, timeout=timeout)
         response.raise_for_status()
     except httpx.HTTPError as exc:
-        raise SourceReadError(f"failed to fetch URL: {url}") from exc
+        raise SourceReadError(
+            f"failed to fetch URL: {url} ({exc.__class__.__name__}: {exc})"
+        ) from exc
 
-    extracted = trafilatura.extract(
-        response.text,
-        include_comments=False,
-        include_tables=True,
-        output_format="txt",
-    )
-    if extracted is None or not extracted.strip():
+    content_type = _normalized_content_type(response.headers.get("content-type"))
+    response_url = str(response.url)
+    response_text = response.text.strip()
+
+    extraction_method = "trafilatura"
+    extracted: str
+    if (
+        content_type in {"text/plain", "text/markdown"}
+        or (content_type is not None and "markdown" in content_type)
+        or _looks_like_markdown_url(response_url)
+    ):
+        extracted = response_text
+        extraction_method = "raw_text"
+    else:
+        extracted_candidate = trafilatura.extract(
+            response.text,
+            include_comments=False,
+            include_tables=True,
+            output_format="txt",
+        )
+        extracted = extracted_candidate.strip() if extracted_candidate is not None else ""
+
+    if not extracted:
         raise SourceExtractionError(f"no extractable text found for URL: {url}")
 
     metadata: dict[str, Any] = {
-        "final_url": str(response.url),
+        "final_url": response_url,
         "status_code": response.status_code,
         "content_type": response.headers.get("content-type"),
         "fetcher": "httpx",
         "extractor": "trafilatura",
+        "extraction_method": extraction_method,
     }
-    return extracted.strip(), metadata
+    return extracted, metadata
 
 
 def read_pdf_source(path: Path) -> tuple[str, dict[str, Any]]:
