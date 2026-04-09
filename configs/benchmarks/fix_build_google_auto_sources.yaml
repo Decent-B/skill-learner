@@ -1,0 +1,94 @@
+benchmark_id: fix-build-google-auto
+task: fix-build-google-auto
+generated_on: "2026-04-09"
+sources:
+  - id: G1
+    url: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - validate-workflow
+      - fix-trigger
+      - fix-matrix
+  - id: G2
+    url: https://docs.github.com/en/actions/tutorials/build-and-test-code/building-and-testing-java-with-maven
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - setup-maven-workflow
+      - add-cache
+      - run-verify
+  - id: G3
+    url: https://docs.github.com/en/actions/tutorials/build-and-test-code/building-and-testing-java-with-gradle
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - setup-gradle-workflow
+      - daemon-flags
+  - id: G4
+    url: https://raw.githubusercontent.com/actions/setup-java/main/README.md
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - configure-jdk
+      - configure-cache
+      - configure-settings-xml
+  - id: G5
+    url: https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - choose-goal
+      - phase-correction
+  - id: G6
+    url: https://maven.apache.org/ref/3-LATEST/maven-embedder/cli.html
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - apply-cli-flags
+      - module-scoped-rerun
+  - id: G7
+    url: https://maven.apache.org/settings.html
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - fix-settings
+      - mirror-proxy-repair
+  - id: G8
+    url: https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - tune-test-phase
+      - isolate-flaky-tests
+  - id: G9
+    url: https://docs.gradle.org/current/userguide/command_line_interface_basics.html
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - gradle-flag-repair
+  - id: G10
+    url: https://docs.gradle.org/current/userguide/troubleshooting.html
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - gradle-dependency-debug
+      - root-cause-flow
+  - id: G11
+    url: https://bazel.build/versions/8.4.0/docs/user-manual
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - bazel-build-test-repair
+  - id: G12
+    url: https://raw.githubusercontent.com/googleapis/googleapis/master/README.md
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - googleapis-build-targeting
+  - id: G13
+    url: https://raw.githubusercontent.com/googleapis/google-cloud-java/main/CONTRIBUTING.md
+    source_type: web
+    quality: gold
+    expected_skill_ops:
+      - contributor-build-repro
