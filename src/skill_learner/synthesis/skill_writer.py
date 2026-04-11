@@ -22,6 +22,7 @@ _NOISE_EXACT = {
     "assigned",
     "document",
 }
+_PLACEHOLDER_MARKERS = ("taskname", "option-name", "[...]", "...")
 _TAG_WEIGHT = {
     "build_cmd": 50,
     "dependency_fix": 40,
@@ -94,6 +95,12 @@ def _is_noise_text(text: str, confidence: StepConfidence, tags: list[str]) -> bo
             return True
     if len(compact) > 260 and "build_cmd" not in tags and "dependency_fix" not in tags:
         return True
+    if "build_cmd" in tags:
+        if any(marker in lowered for marker in _PLACEHOLDER_MARKERS):
+            return True
+        # Keep concrete commands; drop placeholder command templates.
+        if "[" in compact and "]" in compact:
+            return True
     return False
 
 
@@ -125,6 +132,10 @@ def select_candidate_steps(payload: PreviewPayload, max_steps: int = 24) -> list
                 postconditions=preview_step.postconditions,
             )
             confidence_score = _CONFIDENCE_WEIGHT[preview_step.confidence]
+            # Ranking order:
+            # 1) confidence
+            # 2) important tags
+            # 3) stable source/order/text tie-breakers
             key = (
                 -confidence_score,
                 -_tag_score(preview_step.tags),
@@ -137,12 +148,17 @@ def select_candidate_steps(payload: PreviewPayload, max_steps: int = 24) -> list
     ranked.sort(key=lambda entry: entry[0])
 
     unique_texts: set[str] = set()
+    source_quota: dict[str, int] = {}
     selected_steps: list[SelectedStep] = []
     for _, step in ranked:
         canonical = _SPACE_RE.sub(" ", step.text).lower()
         if canonical in unique_texts:
             continue
+        if source_quota.get(step.source_item_id, 0) >= 4:
+            # Prevent one verbose source from dominating the generated skill.
+            continue
         unique_texts.add(canonical)
+        source_quota[step.source_item_id] = source_quota.get(step.source_item_id, 0) + 1
         selected_steps.append(step)
         if len(selected_steps) >= max_steps:
             break
@@ -161,7 +177,9 @@ def _render_frontmatter(metadata: SkillMetadata) -> str:
     return "\n".join(lines)
 
 
-def _render_skill_body(metadata: SkillMetadata, steps: list[SelectedStep]) -> str:
+def _render_skill_body(steps: list[SelectedStep]) -> str:
+    # Pull prerequisites from extracted procedural constraints first, then
+    # fall back to concise defaults for minimum usable guidance.
     prereqs = _dedupe_keep_order(
         [pre for step in steps for pre in step.preconditions]
         or [
@@ -226,7 +244,7 @@ def _render_skill_body(metadata: SkillMetadata, steps: list[SelectedStep]) -> st
 
 def render_skill_markdown(metadata: SkillMetadata, steps: list[SelectedStep]) -> str:
     """Render deterministic `SKILL.md` content."""
-    return _render_frontmatter(metadata) + "\n\n" + _render_skill_body(metadata, steps=steps)
+    return _render_frontmatter(metadata) + "\n\n" + _render_skill_body(steps=steps)
 
 
 def render_source_step_map(steps: list[SelectedStep]) -> str:

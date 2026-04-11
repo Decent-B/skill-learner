@@ -82,6 +82,43 @@ def test_select_candidate_steps_filters_noise_and_orders_by_priority() -> None:
     assert selected[1].text == "rerun mvn -rf :core --also-make"
 
 
+def test_select_candidate_steps_filters_placeholder_commands() -> None:
+    payload = PreviewPayload.model_validate(
+        {
+            "benchmark_id": "fix-build-google-auto",
+            "items": [
+                {
+                    "id": "G1",
+                    "status": "success",
+                    "steps": [
+                        {
+                            "source_id": "web_1111111111111111",
+                            "text": "gradle [taskName...] [--option-name...]",
+                            "tags": ["build_cmd"],
+                            "confidence": "high",
+                            "span": None,
+                            "preconditions": [],
+                            "postconditions": [],
+                        },
+                        {
+                            "source_id": "web_1111111111111111",
+                            "text": "gradle build --stacktrace",
+                            "tags": ["build_cmd", "diagnostic_flag"],
+                            "confidence": "high",
+                            "span": None,
+                            "preconditions": [],
+                            "postconditions": [],
+                        },
+                    ],
+                }
+            ],
+        }
+    )
+
+    selected = select_candidate_steps(payload, max_steps=10)
+    assert [step.text for step in selected] == ["gradle build --stacktrace"]
+
+
 def test_render_skill_markdown_contains_required_sections() -> None:
     selected = select_candidate_steps(_preview_payload(), max_steps=10)
     metadata = SkillMetadata(
