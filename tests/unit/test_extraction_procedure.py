@@ -92,3 +92,31 @@ def test_extract_procedure_maps_numbered_list_item_to_source_span() -> None:
     assert step.span is not None
     assert step.span.section_title == "Flow"
     assert step.span.section_line_start == 1
+
+
+def test_extract_procedure_ignores_non_procedural_list_noise() -> None:
+    normalized = NormalizedDocument(
+        source_id="text_1111222233334444",
+        source_uri="https://example.com/noise",
+        sections=[NormalizedSection(title="Noise", body="created\nopened\nlabeled")],
+        code_blocks=[],
+        list_items=["created", "opened", "labeled"],
+        command_like_lines=[],
+    )
+
+    result = extract_procedure(normalized)
+    assert result.steps == []
+
+
+def test_extract_procedure_filters_generic_imperative_without_technical_signal() -> None:
+    normalized = NormalizedDocument(
+        source_id="text_9999888877776666",
+        source_uri="https://example.com/generic",
+        sections=[NormalizedSection(title="Generic", body="Use the tags\nUse the paths")],
+        code_blocks=[],
+        list_items=["Use the tags", "Use the paths"],
+        command_like_lines=[],
+    )
+
+    result = extract_procedure(normalized)
+    assert result.steps == []

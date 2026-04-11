@@ -7,21 +7,11 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from skill_learner.command_heuristics import is_command_like_line
 from skill_learner.normalization.models import NormalizedDocument
 
 from .models import ExtractedStep, ProcedureExtractionResult, SourceSpan, StepConfidence
 
-_COMMAND_PREFIXES = (
-    "mvn ",
-    "./mvnw ",
-    "gradle ",
-    "./gradlew ",
-    "bazel ",
-    "gh ",
-    "docker ",
-    "git ",
-    "java ",
-)
 _NUMBERED_STEP_RE = re.compile(r"^\d+\.\s+.+")
 _IMPERATIVE_VERBS = (
     "run",
@@ -42,6 +32,31 @@ _IMPERATIVE_VERBS = (
 )
 _LIST_PREFIX_RE = re.compile(r"^(?:[-*+]\s+|\d+\.\s+)")
 _WHITESPACE_RE = re.compile(r"\s+")
+_ENV_VAR_RE = re.compile(r"\b[A-Z][A-Z0-9_]{2,}\b")
+_TECHNICAL_MARKERS = (
+    "workflow",
+    ".yml",
+    ".yaml",
+    "settings.xml",
+    "pom.xml",
+    "build.gradle",
+    "java_home",
+    "jdk",
+    "maven",
+    "gradle",
+    "bazel",
+    "dependency",
+    "dependencies",
+    "cache",
+    "proxy",
+    "mirror",
+    "module",
+    "artifact",
+    "actions/",
+    "--",
+    "//",
+    " -",
+)
 
 
 @dataclass
@@ -63,8 +78,7 @@ def _dedupe_keep_order(items: list[str]) -> list[str]:
 
 
 def _looks_like_command(text: str) -> bool:
-    lower = text.strip().lower()
-    return any(lower.startswith(prefix) for prefix in _COMMAND_PREFIXES)
+    return is_command_like_line(text)
 
 
 def _looks_imperative(text: str) -> bool:
@@ -74,6 +88,33 @@ def _looks_imperative(text: str) -> bool:
 
 def _is_numbered_step(text: str) -> bool:
     return _NUMBERED_STEP_RE.match(text.strip()) is not None
+
+
+def _is_actionable_non_command_line(text: str) -> bool:
+    """
+    Return True for imperative/numbered lines with enough technical signal.
+
+    This avoids generic prose such as "Use the tags" that is procedural in form
+    but too abstract to be useful in executable skill synthesis.
+    """
+    compact = _WHITESPACE_RE.sub(" ", text.strip())
+    if not compact or len(compact) > 220:
+        return False
+
+    word_count = len(compact.split())
+    if word_count < 3:
+        return False
+
+    lower = compact.lower()
+    if any(marker in lower for marker in _TECHNICAL_MARKERS):
+        return True
+    if "`" in compact:
+        return True
+    if _ENV_VAR_RE.search(compact):
+        return True
+    if any(token in lower for token in ("build", "test", "deploy", "verify", "rerun", "retry")):
+        return True
+    return False
 
 
 def _normalize_for_span_match(text: str) -> str:
@@ -92,6 +133,7 @@ def _build_span_index(normalized: NormalizedDocument) -> dict[str, SourceSpan]:
             key = _normalize_for_span_match(line)
             if not key or key in index:
                 continue
+            # Keep the first occurrence for deterministic provenance mapping.
             index[key] = SourceSpan(
                 section_title=section.title,
                 section_line_start=section_line_number,
@@ -200,14 +242,25 @@ def _collect_step_candidates(normalized: NormalizedDocument) -> list[_StepCandid
     span_index = _build_span_index(normalized)
     candidate_texts: list[str] = []
     candidate_texts.extend(normalized.command_like_lines)
-    candidate_texts.extend(normalized.list_items)
+    for item in normalized.list_items:
+        # List items are noisy in scraped docs; only keep procedural entries.
+        if _looks_like_command(item):
+            candidate_texts.append(item)
+            continue
+        is_procedural = _is_numbered_step(item) or _looks_imperative(item)
+        if is_procedural and _is_actionable_non_command_line(item):
+            candidate_texts.append(item)
 
     for section in normalized.sections:
         for raw_line in section.body.splitlines():
             line = raw_line.strip()
             if not line:
                 continue
-            if _is_numbered_step(line) or _looks_imperative(line) or _looks_like_command(line):
+            if _looks_like_command(line):
+                candidate_texts.append(line)
+                continue
+            is_procedural = _is_numbered_step(line) or _looks_imperative(line)
+            if is_procedural and _is_actionable_non_command_line(line):
                 candidate_texts.append(line)
 
     deduped = _dedupe_keep_order(candidate_texts)

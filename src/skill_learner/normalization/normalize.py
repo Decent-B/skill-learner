@@ -6,6 +6,7 @@ import json
 import re
 from pathlib import Path
 
+from skill_learner.command_heuristics import is_command_like_line
 from skill_learner.models import ManifestRecord
 
 from .models import NormalizedCodeBlock, NormalizedDocument, NormalizedSection
@@ -16,18 +17,6 @@ _FENCED_BLOCK_RE = re.compile(
     flags=re.DOTALL,
 )
 _LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]\s+|\d+\.\s+)(?P<item>.+?)\s*$")
-_COMMAND_PREFIXES = (
-    "mvn ",
-    "./mvnw ",
-    "gradle ",
-    "./gradlew ",
-    "bazel ",
-    "gh ",
-    "docker ",
-    "git ",
-    "java ",
-)
-
 
 def _dedupe_keep_order(items: list[str]) -> list[str]:
     seen: set[str] = set()
@@ -93,11 +82,7 @@ def _extract_list_items(text: str) -> list[str]:
 
 
 def _looks_like_command(line: str) -> bool:
-    stripped = line.strip()
-    if not stripped:
-        return False
-    lowered = stripped.lower()
-    return any(lowered.startswith(prefix) for prefix in _COMMAND_PREFIXES)
+    return is_command_like_line(line)
 
 
 def _extract_command_like_lines(text: str, code_blocks: list[NormalizedCodeBlock]) -> list[str]:
