@@ -1,0 +1,46 @@
+benchmark_id: web-cybersecurity-preflight-live
+task: web-cybersecurity-ingestion-preflight
+generated_on: "2026-04-18"
+jobs:
+  - source: nvd
+    enabled: true
+    max_records: 25
+    results_per_page: 25
+    api_key_env: NVD_API_KEY
+
+  - source: github_advisories
+    enabled: true
+    advisory_type: reviewed
+    max_records: 25
+    per_page: 25
+    github_token_env: GITHUB_TOKEN
+
+  - source: nuclei_templates
+    enabled: true
+    max_records: 20
+    include_template_content: true
+
+  - source: exploit_db
+    enabled: true
+    max_records: 20
+    include_exploit_source: true
+    include_only_verified: true
+    type_filter:
+      - webapps
+      - remote
+      - local
+
+  - source: pentester_land
+    enabled: true
+    max_records: 15
+    include_link_content: true
+    max_links_per_record: 1
+
+  - source: hackerone_reports
+    enabled: true
+    max_records: 2
+    prefer_json_endpoint: true
+    include_page_content: true
+    report_ids:
+      - 291531
+      - 230244

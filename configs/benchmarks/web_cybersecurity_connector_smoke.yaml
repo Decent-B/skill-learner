@@ -1,0 +1,45 @@
+benchmark_id: web-cybersecurity-smoke
+task: web-cybersecurity-ingestion-smoke
+generated_on: "2026-04-18"
+jobs:
+  - source: nvd
+    enabled: true
+    max_records: 10
+    results_per_page: 10
+    api_key_env: NVD_API_KEY
+
+  - source: github_advisories
+    enabled: true
+    advisory_type: reviewed
+    max_records: 10
+    per_page: 10
+    github_token_env: GITHUB_TOKEN
+
+  - source: nuclei_templates
+    enabled: true
+    max_records: 5
+    include_template_content: false
+
+  - source: exploit_db
+    enabled: true
+    max_records: 5
+    include_exploit_source: false
+    include_only_verified: true
+    type_filter:
+      - webapps
+      - remote
+      - local
+
+  - source: pentester_land
+    enabled: true
+    max_records: 5
+    include_link_content: false
+    max_links_per_record: 0
+
+  - source: hackerone_reports
+    enabled: true
+    max_records: 1
+    prefer_json_endpoint: true
+    include_page_content: true
+    report_ids:
+      - 291531

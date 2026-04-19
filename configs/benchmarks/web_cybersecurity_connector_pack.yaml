@@ -1,0 +1,38 @@
+benchmark_id: web-cybersecurity-connectors
+task: web-cybersecurity-ingestion
+generated_on: "2026-04-16"
+max_concurrent_jobs: 6
+jobs:
+  - source: nvd
+    enabled: true
+    results_per_page: 2000
+    api_key_env: NVD_API_KEY
+
+  - source: github_advisories
+    enabled: true
+    advisory_type: all
+    per_page: 100
+    github_token_env: GITHUB_TOKEN
+
+  - source: nuclei_templates
+    enabled: true
+    include_template_content: true
+
+  - source: exploit_db
+    enabled: true
+    include_exploit_source: true
+    include_only_verified: false
+
+  - source: pentester_land
+    enabled: true
+    include_link_content: true
+    max_links_per_record: 2
+
+  - source: hackerone_reports
+    enabled: true
+    prefer_json_endpoint: true
+    include_page_content: true
+    discover_reports_via_graphql: true
+    discovery_page_size: 100
+    report_ids:
+      - 291531
