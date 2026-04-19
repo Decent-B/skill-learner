@@ -105,16 +105,20 @@ class NucleiTemplatesConnector(BaseConnector):
         if not isinstance(classification, dict):
             classification = {}
 
-        aliases = unique_str([
-            template_id,
-            _to_str(classification.get("cve-id")).upper(),
-            *extract_cve_ids(template_id, description or ""),
-        ])
+        aliases = unique_str(
+            [
+                template_id,
+                _to_str(classification.get("cve-id")).upper(),
+                *extract_cve_ids(template_id, description or ""),
+            ]
+        )
         cve_ids = [alias for alias in aliases if alias.startswith("CVE-")]
-        cwe_ids = unique_str([
-            _to_str(classification.get("cwe-id")).upper(),
-            *extract_cwe_ids(description or ""),
-        ])
+        cwe_ids = unique_str(
+            [
+                _to_str(classification.get("cwe-id")).upper(),
+                *extract_cwe_ids(description or ""),
+            ]
+        )
 
         references: list[Reference] = []
         ref_values = info.get("reference")

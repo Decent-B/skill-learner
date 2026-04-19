@@ -212,8 +212,7 @@ class HackerOneReportsConnector(BaseConnector):
                     title = _to_str_or_none(json_payload.get("title"))
                     if self._job.include_page_content:
                         page_text = (
-                            _to_str_or_none(json_payload.get("vulnerability_information"))
-                            or ""
+                            _to_str_or_none(json_payload.get("vulnerability_information")) or ""
                         )
                     published_at = parse_datetime_utc(
                         _to_str_or_none(json_payload.get("submitted_at"))

@@ -17,9 +17,7 @@ def test_hackerone_connector_prefers_json_endpoint() -> None:
         "title": "Introspection query leaks sensitive graphql system information.",
         "submitted_at": "2017-11-18T16:58:42.150Z",
         "vulnerability_information": (
-            "Summary: test report\n"
-            "Steps to reproduce:\n"
-            "1. Send crafted graphql query"
+            "Summary: test report\nSteps to reproduce:\n1. Send crafted graphql query"
         ),
         "cve_ids": ["CVE-2017-0001"],
     }

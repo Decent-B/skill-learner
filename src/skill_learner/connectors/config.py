@@ -50,7 +50,9 @@ class NucleiTemplatesJob(BaseModel):
     source: Literal["nuclei_templates"]
     enabled: bool = True
     max_records: int | None = Field(default=None, ge=1)
-    cves_url: str = "https://raw.githubusercontent.com/projectdiscovery/nuclei-templates/main/cves.json"
+    cves_url: str = (
+        "https://raw.githubusercontent.com/projectdiscovery/nuclei-templates/main/cves.json"
+    )
     raw_root_url: str = "https://raw.githubusercontent.com/projectdiscovery/nuclei-templates/main"
     include_template_content: bool = True
 

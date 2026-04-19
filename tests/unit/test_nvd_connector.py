@@ -53,8 +53,7 @@ def test_nvd_connector_parses_one_record(monkeypatch: pytest.MonkeyPatch) -> Non
                                     "cpeMatch": [
                                         {
                                             "criteria": (
-                                                "cpe:2.3:a:vendor:product:"
-                                                "1.2.3:*:*:*:*:*:*:*"
+                                                "cpe:2.3:a:vendor:product:1.2.3:*:*:*:*:*:*:*"
                                             )
                                         }
                                     ]

@@ -166,9 +166,7 @@ class NVDConnector(BaseConnector):
         if english_values:
             return english_values[0].strip()
         fallback_values = [
-            _to_str(item.get("value"))
-            for item in descriptions
-            if isinstance(item, dict)
+            _to_str(item.get("value")) for item in descriptions if isinstance(item, dict)
         ]
         return fallback_values[0].strip() if fallback_values else ""
 
