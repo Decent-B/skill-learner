@@ -337,6 +337,7 @@ class HackerOneReportsConnector(BaseConnector):
 
 
 def _looks_like_js_placeholder(text: str) -> bool:
+    """Detect placeholder text shown when report content requires JavaScript."""
     lowered = text.strip().lower()
     if not lowered:
         return False
@@ -344,11 +345,13 @@ def _looks_like_js_placeholder(text: str) -> bool:
 
 
 def _to_str_or_none(value: object) -> str | None:
+    """Return stripped string value or None when blank/missing."""
     text = str(value).strip() if value is not None else ""
     return text or None
 
 
 def _to_int_or_none(value: object) -> int | None:
+    """Convert value to int when possible, otherwise return None."""
     text = _to_str_or_none(value)
     if text is None:
         return None
@@ -359,6 +362,7 @@ def _to_int_or_none(value: object) -> int | None:
 
 
 def _unique_ints(values: list[int]) -> list[int]:
+    """Return first-seen unique integers while preserving stable ordering."""
     seen: set[int] = set()
     out: list[int] = []
     for value in values:

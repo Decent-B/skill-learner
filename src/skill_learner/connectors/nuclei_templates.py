@@ -209,6 +209,7 @@ class NucleiTemplatesConnector(BaseConnector):
 
 
 def _parse_tags(value: object) -> list[str]:
+    """Normalize nuclei tag field into unique lowercase tag values."""
     if value is None:
         return []
     if isinstance(value, str):
@@ -219,15 +220,18 @@ def _parse_tags(value: object) -> list[str]:
 
 
 def _to_str(value: object) -> str:
+    """Convert optional value to string, returning empty string for None."""
     return str(value) if value is not None else ""
 
 
 def _to_str_or_none(value: object) -> str | None:
+    """Return stripped string value or None when blank/missing."""
     text = _to_str(value).strip()
     return text or None
 
 
 def _to_float_or_none(value: object) -> float | None:
+    """Parse numeric-like nuclei metadata value as float when possible."""
     if isinstance(value, int | float):
         return float(value)
     if isinstance(value, str):

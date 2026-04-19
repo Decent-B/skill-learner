@@ -48,10 +48,12 @@ _PAYLOAD_PATTERNS = (
 
 
 def _normalize_line(line: str) -> str:
+    """Collapse whitespace and strip markdown-style wrapping markers."""
     return _SPACE_RE.sub(" ", line.strip().strip("`"))
 
 
 def _looks_command_like(line: str) -> bool:
+    """Heuristically detect whether a line appears to be a shell command."""
     if not line:
         return False
     tokens = line.split()
@@ -62,7 +64,11 @@ def _looks_command_like(line: str) -> bool:
 
 
 def extract_procedure_evidence(text: str) -> ProcedureEvidence:
-    """Extract step, command, and payload candidates from free text."""
+    """Extract procedural evidence from free text and code-fence content.
+
+    This keeps extraction intentionally heuristic so heterogeneous sources can
+    still provide useful steps, commands, and payload fragments for synthesis.
+    """
     steps: list[str] = []
     commands: list[str] = []
     payloads: list[str] = []
@@ -101,6 +107,7 @@ def extract_procedure_evidence(text: str) -> ProcedureEvidence:
 
 
 def _dedupe(values: list[str]) -> list[str]:
+    """Return first-seen unique values while preserving stable ordering."""
     seen: set[str] = set()
     out: list[str] = []
     for value in values:

@@ -9,6 +9,7 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 
 
 def _is_retryable(exc: BaseException) -> bool:
+    """Return whether an exception should trigger tenacity retry behavior."""
     if isinstance(exc, httpx.RequestError):
         return True
     if isinstance(exc, httpx.HTTPStatusError):

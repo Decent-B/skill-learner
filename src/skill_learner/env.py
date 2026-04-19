@@ -47,6 +47,7 @@ def load_environment(
 
 
 def _default_env_paths() -> list[Path]:
+    """Return de-duplicated default .env search locations for CLI startup."""
     cwd = Path.cwd()
     package_src = Path(__file__).resolve().parents[1]
     candidates = [
@@ -67,6 +68,7 @@ def _default_env_paths() -> list[Path]:
 
 
 def _parse_env_line(line: str) -> tuple[str, str] | None:
+    """Parse one .env line into key/value, ignoring comments and invalid entries."""
     stripped = line.strip()
     if not stripped or stripped.startswith("#"):
         return None

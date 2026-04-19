@@ -17,6 +17,7 @@ ProgressCallback = Callable[[DataSource, str, int, str | None], None]
 
 
 def _write_metadata(summary: ConnectorRunSummary, metadata_path: Path) -> None:
+    """Persist run summary sidecar JSON for reproducibility and failure diagnosis."""
     metadata_path.write_text(
         json.dumps(summary.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -30,6 +31,7 @@ def _emit_progress(
     record_count: int,
     error: str | None,
 ) -> None:
+    """Invoke optional progress callback with normalized runner status payload."""
     if progress_callback is not None:
         progress_callback(source, status, record_count, error)
 
@@ -43,7 +45,11 @@ def collect_job(
     flush_every_records: int = 1,
     progress_every_records: int = 25,
 ) -> ConnectorRunSummary:
-    """Execute one connector job and persist records + metadata snapshots."""
+    """Execute one connector job and persist records plus metadata sidecars.
+
+    The runner emits incremental progress updates, writes JSONL records as they
+    stream from the connector, and always returns a structured run summary.
+    """
     source = source_name(job)
     fetched_at = datetime.now(UTC)
 
@@ -141,7 +147,11 @@ def collect_pack(
     max_concurrent_jobs: int | None = None,
     progress_callback: ProgressCallback | None = None,
 ) -> list[ConnectorRunSummary]:
-    """Execute every connector job in a validated connector pack."""
+    """Execute every connector job in a validated connector pack.
+
+    Jobs run sequentially or in a bounded thread pool while preserving output
+    summary order to match the input pack job ordering.
+    """
     configured_workers = (
         max_concurrent_jobs if max_concurrent_jobs is not None else pack.max_concurrent_jobs
     )

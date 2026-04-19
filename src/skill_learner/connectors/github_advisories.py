@@ -267,6 +267,7 @@ class GitHubAdvisoriesConnector(BaseConnector):
 
 
 def _next_link(link_header: str | None) -> str | None:
+    """Parse RFC5988 Link header and return URL for rel=next if present."""
     if not link_header:
         return None
     for match in _LINK_PART_RE.finditer(link_header):
@@ -277,6 +278,7 @@ def _next_link(link_header: str | None) -> str | None:
 
 
 def _extract_epss_score(advisory: dict[str, Any]) -> float | None:
+    """Extract EPSS probability from advisory database_specific payload."""
     database_specific = advisory.get("database_specific")
     if isinstance(database_specific, dict):
         epss = database_specific.get("epss")
@@ -286,6 +288,7 @@ def _extract_epss_score(advisory: dict[str, Any]) -> float | None:
 
 
 def _extract_epss_percentile(advisory: dict[str, Any]) -> float | None:
+    """Extract EPSS percentile from advisory database_specific payload."""
     database_specific = advisory.get("database_specific")
     if isinstance(database_specific, dict):
         epss = database_specific.get("epss")
@@ -295,15 +298,18 @@ def _extract_epss_percentile(advisory: dict[str, Any]) -> float | None:
 
 
 def _to_str(value: object) -> str:
+    """Convert optional value to string, returning empty string for None."""
     return str(value) if value is not None else ""
 
 
 def _to_str_or_none(value: object) -> str | None:
+    """Return stripped string value or None when blank/missing."""
     text = _to_str(value).strip()
     return text or None
 
 
 def _to_float_or_none(value: object) -> float | None:
+    """Convert int/float values to float and reject non-numeric input."""
     if isinstance(value, int | float):
         return float(value)
     return None

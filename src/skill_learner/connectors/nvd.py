@@ -262,21 +262,25 @@ class NVDConnector(BaseConnector):
 
 
 def _to_str(value: object) -> str:
+    """Convert optional value to string, returning empty string for None."""
     return str(value) if value is not None else ""
 
 
 def _to_str_or_none(value: object) -> str | None:
+    """Return stripped string value or None when blank/missing."""
     text = _to_str(value).strip()
     return text or None
 
 
 def _to_float_or_none(value: object) -> float | None:
+    """Convert numeric-like value to float when already typed as int/float."""
     if isinstance(value, int | float):
         return float(value)
     return None
 
 
 def _collect_cpe_matches(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Recursively flatten NVD configuration nodes into cpeMatch entries."""
     out: list[dict[str, Any]] = []
     for node in nodes:
         cpe_matches = node.get("cpeMatch")
@@ -290,6 +294,7 @@ def _collect_cpe_matches(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _parse_cpe23(cpe: str) -> tuple[str | None, str | None, str | None]:
+    """Extract vendor, product, and version from a CPE 2.3 formatted string."""
     parts = cpe.split(":")
     if len(parts) < 6:
         return None, None, None
