@@ -16,3 +16,6 @@ coverage.xml
 .pytest_cache/
 .ruff_cache/
 .uv-cache/
+
+# Environment variables
+.env
