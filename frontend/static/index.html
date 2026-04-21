@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skill Learner Data Observatory</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div>
+        <p class="kicker">Skill Learner</p>
+        <h1>Data Observatory</h1>
+        <p class="subtitle">
+          Navigate benchmark outputs, inspect normalized records, and open source-native raw payloads.
+        </p>
+      </div>
+      <div class="topbar-actions">
+        <button id="refreshButton" class="btn btn-solid" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <aside class="panel sidebar-panel">
+        <section class="stack-block">
+          <div class="section-head">
+            <h2>Benchmarks</h2>
+            <span id="benchmarkCount" class="mono tiny"></span>
+          </div>
+          <div id="benchmarkList" class="list"></div>
+        </section>
+
+        <section class="stack-block">
+          <div class="section-head">
+            <h2>Sources</h2>
+            <span id="sourceCount" class="mono tiny"></span>
+          </div>
+          <div id="sourceList" class="list"></div>
+        </section>
+      </aside>
+
+      <section class="main-column">
+        <section id="overviewPanel" class="panel overview-panel"></section>
+
+        <section class="panel controls-panel">
+          <div class="controls-grid">
+            <label class="control">
+              <span>Search Records</span>
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Find by CVE, GHSA, title, description, or raw content"
+                autocomplete="off"
+              />
+            </label>
+
+            <label class="control small-control">
+              <span>Page Size</span>
+              <select id="pageSizeSelect">
+                <option value="20">20</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+
+            <div class="pager" role="group" aria-label="Pagination">
+              <button id="prevPageButton" class="btn" type="button">Previous</button>
+              <span id="pageLabel" class="mono tiny">-</span>
+              <button id="nextPageButton" class="btn" type="button">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Record</th>
+                  <th>Identifiers</th>
+                  <th>References</th>
+                  <th>Procedure</th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel detail-panel">
+        <div class="section-head sticky-head">
+          <h2>Record Detail</h2>
+          <span id="detailHint" class="mono tiny">Select a row</span>
+        </div>
+        <div id="detailBody" class="detail-body"></div>
+      </aside>
+    </main>
+
+    <template id="emptyStateTemplate">
+      <div class="empty-state">
+        <h3>No records to display</h3>
+        <p>Try a different source, reduce filters, or wait for source output to arrive.</p>
+      </div>
+    </template>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
