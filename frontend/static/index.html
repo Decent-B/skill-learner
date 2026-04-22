@@ -20,7 +20,7 @@
         <p class="kicker">Skill Learner</p>
         <h1>Data Observatory</h1>
         <p class="subtitle">
-          Navigate benchmark outputs, inspect normalized records, and open source-native raw payloads.
+          Navigate dataset runs, inspect normalized records, and open source-native raw payloads.
         </p>
       </div>
       <div class="topbar-actions">
@@ -28,14 +28,24 @@
       </div>
     </header>
 
-    <main class="shell">
-      <aside class="panel sidebar-panel">
+    <main class="shell" id="shell">
+      <nav class="mobile-tabs" aria-label="Mobile panels">
+        <button id="tabSidebar" class="mobile-tab active" type="button" data-pane-target="sidebar">
+          Sources
+        </button>
+        <button id="tabMain" class="mobile-tab" type="button" data-pane-target="main">Records</button>
+        <button id="tabDetail" class="mobile-tab" type="button" data-pane-target="detail">
+          Detail
+        </button>
+      </nav>
+
+      <aside class="panel sidebar-panel pane active" data-pane="sidebar">
         <section class="stack-block">
           <div class="section-head">
-            <h2>Benchmarks</h2>
-            <span id="benchmarkCount" class="mono tiny"></span>
+            <h2>Runs</h2>
+            <span id="runCount" class="mono tiny"></span>
           </div>
-          <div id="benchmarkList" class="list"></div>
+          <div id="runList" class="list"></div>
         </section>
 
         <section class="stack-block">
@@ -47,7 +57,9 @@
         </section>
       </aside>
 
-      <section class="main-column">
+      <div class="pane-resizer" id="resizerLeft" role="separator" aria-label="Resize source panel"></div>
+
+      <section class="main-column pane" data-pane="main">
         <section id="overviewPanel" class="panel overview-panel"></section>
 
         <section class="panel controls-panel">
@@ -97,7 +109,9 @@
         </section>
       </section>
 
-      <aside class="panel detail-panel">
+      <div class="pane-resizer" id="resizerRight" role="separator" aria-label="Resize detail panel"></div>
+
+      <aside class="panel detail-panel pane" data-pane="detail">
         <div class="section-head sticky-head">
           <h2>Record Detail</h2>
           <span id="detailHint" class="mono tiny">Select a row</span>
