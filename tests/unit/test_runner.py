@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -129,7 +130,7 @@ def test_collect_job_preserves_partial_output_when_stream_fails(
         def options_dict(self) -> dict[str, object]:
             return {"mode": "test"}
 
-        def iter_records(self):
+        def iter_records(self) -> Iterator[CybersecurityRecord]:
             yield _record("1")
             raise RuntimeError("stream boom")
 
@@ -169,7 +170,7 @@ def test_collect_job_reports_live_progress_updates(
         def options_dict(self) -> dict[str, object]:
             return {}
 
-        def iter_records(self):
+        def iter_records(self) -> Iterator[CybersecurityRecord]:
             yield _record("1")
             yield _record("2")
 
