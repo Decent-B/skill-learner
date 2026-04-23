@@ -3,3 +3,15 @@ ingestion:
   raw_dir: datasets/raw
   manifest_dir: datasets/manifests
   allow_live_network: true
+synthesis:
+  hackerone_skill_package:
+    benchmark_id: web-cybersecurity-connectors
+    package_name: web_exploit_skill_package_v1
+    dataset_root: datasets/cybersecurity_records
+    output_root: skills/generated
+    mode: full
+    max_records: 200
+    model: gpt-4.1-mini
+    temperature: 0.1
+    validation_enabled: true
+    max_validation_attempts: 3
